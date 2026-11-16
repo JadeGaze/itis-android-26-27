@@ -1,157 +1,142 @@
-# ItisAndroid — учебный проект по Android-разработке
+# ItisAndroid — Android learning project
 
-Одномодульное Compose-приложение для занятий: два feature-модуля в одном пакете
-(фильмы и погода), дизайн-система, навигация, ViewModel + StateFlow, Room и Retrofit.
+A single-module Compose app for the course: two feature areas inside one package
+(movies and weather), plus a design system, navigation, ViewModel + StateFlow,
+Room and Retrofit.
 
-**Без DI-фреймворков и без мультимодульности** — намеренно, чтобы на занятии
-было видно, как всё связано руками.
+**No DI framework and no multi-module setup** — on purpose, so that during a
+lesson you can see how everything is wired by hand.
 
-## Стек
+## Stack
 
-| Слой | Технологии |
+| Layer | Technologies |
 | --- | --- |
 | UI | Jetpack Compose, Material 3, Navigation Compose |
-| Состояние | ViewModel (`AndroidViewModel`), `StateFlow` + `collectAsState` |
-| База данных | Room (KSP), Flow-запросы, одна база `itis_db` на приложение |
-| Сеть | Retrofit + Gson, OpenWeatherMap API |
-| Асинхронность | Kotlin Coroutines, `viewModelScope`, `flatMapLatest` |
+| State | ViewModel (`AndroidViewModel`), `StateFlow` + `collectAsState` |
+| Database | Room (KSP), Flow queries, one `itis_db` database per app |
+| Network | Retrofit + OkHttp + Gson, OpenWeatherMap API |
+| Async | Kotlin Coroutines, `viewModelScope`, `flatMapLatest` |
 
-## Навигация приложения
+## App navigation
 
-Нижняя навигация (4 вкладки):
+Bottom navigation (4 tabs):
 
-1. **Movies** — CRUD-пример на Room: список, детали, добавление.
-   Здесь же демонстрация «плохого» экрана, который теряет состояние при повороте.
-2. **Weather** — главный экран погоды: поиск города, текущая погода,
-   почасовой и 5-дневный прогноз.
-3. **Cities** — сохранённые города (чтение/удаление строк из Room).
-4. **UI Kit** — витрина дизайн-системы: цвета, типографика, кнопки,
-   карточки, состояния, отступы.
+1. **Movies** — a CRUD example on Room: list, details, add.
+   It also demonstrates a "bad" screen that loses its state on rotation.
+2. **Weather** — the main weather screen: city search, current weather,
+   hourly and 5-day forecast.
+3. **Cities** — saved cities (reading and deleting rows from Room).
+4. **UI Kit** — a design system showcase: colors, typography, buttons,
+   cards, state views, spacing.
 
-Экран деталей дня (`weather/day/{date}`) открывается из списка прогноза
-и живёт вне нижней навигации.
+The day details screen (`weather/day/{date}`) opens from the forecast list
+and lives outside the bottom navigation.
 
-## Структура пакетов
+## Package structure
 
 ```
 com.itis.itisandroid
-├── MainActivity.kt              // точка входа + корневая навигация
-├── data/local/AppDatabase.kt    // единая Room-база (movies + weather)
+├── MainActivity.kt              // entry point + root navigation
+├── data/local/AppDatabase.kt    // the single Room database (movies + weather)
 ├── data/local/Converters.kt     // TypeConverters: Date, List<String>, enum
 ├── movie/
-│   ├── data/                    // репозиторий, DAO, Entity
-│   └── presentation/            // модели, ViewModel, экраны, маршруты
+│   ├── data/                    // repository, DAO, entity
+│   └── presentation/            // models, ViewModel, screens, routes
 ├── weather/
-│   ├── data/                    // Retrofit, OkHttp-интерсепторы, DTO, кэш
-│   └── presentation/            // модели, ViewModel, экраны, компоненты
+│   ├── data/                    // Retrofit, OkHttp interceptors, DTOs, cache
+│   └── presentation/            // models, ViewModel, screens, components
 └── ui/
     ├── theme/                   // Color, Type, Shape, Dimens, Theme
-    ├── components/              // общие компоненты дизайн-системы
-    └── showcase/                // экран UI Kit
+    ├── components/              // shared design-system components
+    └── showcase/                // UI Kit screen
 ```
 
-Правило слоёв: `presentation` не знает про Room и Retrofit; `data` не знает
-про Compose. Репозиторий — единственное место маппинга DTO/Entity → доменная модель.
+Layer rule: `presentation` knows nothing about Room or Retrofit; `data` knows
+nothing about Compose. The repository is the only place that maps
+DTO/Entity → domain model.
 
-## Дизайн-система
+## Design system
 
-Все токены собраны в `ui/theme`:
+All tokens live in `ui/theme`:
 
-- `Color.kt` — палитра и семантические пары светлой/тёмной темы;
-- `Type.kt` — полная шкала Material 3 (display / headline / title / body / label);
-- `Shape.kt` — единые скругления;
-- `Dimens.kt` — сетка отступов 4/8/16/24/32 dp;
-- `Theme.kt` — `MaterialTheme` + переключатель dynamic color (по умолчанию выключен,
-  чтобы палитра бренда была видна на любом устройстве).
+- `Color.kt` — the palette and semantic light/dark theme pairs;
+- `Type.kt` — the full Material 3 scale (display / headline / title / body / label);
+- `Shape.kt` — shared corner radii;
+- `Dimens.kt` — the 4/8/16/24/32 dp spacing grid;
+- `Theme.kt` — `MaterialTheme` + a dynamic color switch (off by default so the
+  brand palette looks the same on every device).
 
-Общие компоненты (`ui/components`): `AppTopBar`, `AppBottomBar`, `AppCard`,
+Shared components (`ui/components`): `AppTopBar`, `AppBottomBar`, `AppCard`,
 `PrimaryButton` / `SecondaryButton` / `DangerButton`, `AppSearchField`,
 `SectionHeader`, `StatTile`, `LoadingView` / `ErrorView` / `EmptyView`.
 
-В экранах не должно быть «магических» цветов, размеров шрифта и отступов —
-всё берётся из темы и компонентов.
+Screens must not contain "magic" colors, font sizes or paddings — everything
+comes from the theme and the components.
 
-## Погода: как устроена работа с сетью и БД
+## Weather: how networking and storage work
 
 ```
 UI → WeatherViewModel → WeatherRepository ──Retrofit──> OpenWeatherMap
                               │
-                              └── Room (кеш слотов + сохранённые города)
-UI ← StateFlow ← ViewModel ← Flow из Room
+                              └── Room (slot cache + saved cities)
+UI ← StateFlow ← ViewModel ← Flow from Room
 ```
 
-1. Пользователь ищет город → `WeatherRepository.refreshForecast()` идёт в сеть.
-2. Успешный ответ сохраняется в таблицу `weather_forecast_slots`.
-3. Экран подписан на `observeForecast()` — данные приходят **из базы**,
-   поэтому при отсутствии сети показывается последний успешный прогноз.
-4. Город добавляется в `saved_cities`; удаление города удаляет и его кеш
-   одной транзакцией.
+1. The user searches for a city → `WeatherRepository.refreshForecast()` goes online.
+2. A successful response is saved into the `weather_forecast_slots` table.
+3. The screen subscribes to `observeForecast()` — data arrives **from the database**,
+   so without a network the last successful forecast is still shown.
+4. The city is added to `saved_cities`; deleting a city also deletes its cache
+   in a single transaction.
 
-3-часовые слоты агрегируются в дни уже в репозитории (min/max температура,
-средняя влажность, максимальный ветер).
+3-hour slots are aggregated into days in the repository (min/max temperature,
+average humidity, maximum wind).
 
-## Превью и моки
+## Previews and mocks
 
-Превью лежат в debug-наборе исходников: `app/src/debug/java/com/itis/itisandroid/preview/`.
+Previews live in the debug source set: `app/src/debug/java/com/itis/itisandroid/preview/`.
 
-- `MoviePreviewData.kt` / `WeatherPreviewData.kt` — моки для всех состояний;
-- `MovieScreenPreviews.kt` — список (контент/пусто/тёмная тема), детали, добавление (заполненное/пустое), «плохой» экран;
-- `WeatherScreenPreviews.kt` — главный экран (контент, поиск, загрузка, ошибка без данных, кеш + ошибка, пусто, тёмная тема), детали дня (есть/нет данных), города (список/пусто);
-- `DesignSystemPreview.kt` — экран UI Kit в светлой и тёмной теме.
+- `MoviePreviewData.kt` / `WeatherPreviewData.kt` — mocks for every state;
+- `MovieScreenPreviews.kt` — list (content/empty/dark theme), details, add screen (filled/empty), the "bad" screen;
+- `WeatherScreenPreviews.kt` — main screen (content, search, loading, error without data, cache + error, empty, dark theme), day details (with/without data), cities (list/empty);
+- `DesignSystemPreview.kt` — the UI Kit screen in light and dark themes.
 
-Открываются в Android Studio через окно **Preview**. В release-сборку превью и моки не попадают.
+Open them in Android Studio through the **Preview** window. Previews and mocks
+never get into a release build.
 
-## Запуск
+## Running the app
 
-1. Открыть проект в Android Studio (JDK 17, Gradle Wrapper 8.13).
-2. Получить бесплатный ключ OpenWeatherMap: https://openweathermap.org/api
-3. Добавить ключ в `local.properties` (файл в `.gitignore`, в репозиторий не попадает):
+1. Open the project in Android Studio (JDK 17, Gradle Wrapper 8.13).
+2. Get a free OpenWeatherMap key: https://openweathermap.org/api
+3. Add the key to `local.properties` (this file is in `.gitignore` and never
+   reaches the repository):
 
    ```properties
-   openweather.api.key=ваш_ключ
+   openweather.api.key=your_key_here
    openweather.base.url=https://api.openweathermap.org/data/2.5/
    ```
 
-   Gradle читает эти значения и генерирует `BuildConfig.OPENWEATHER_API_KEY` и
-   `BuildConfig.OPENWEATHER_BASE_URL`; код обращается к ним через
+   Gradle reads these values and generates `BuildConfig.OPENWEATHER_API_KEY` and
+   `BuildConfig.OPENWEATHER_BASE_URL`; the code accesses them through
    `weather/data/OpenWeatherConfig.kt`.
 
-4. Запустить приложение. Без ключа экран погоды покажет понятную ошибку
-   (HTTP 401), а не упадёт.
+4. Run the app. Without a key the weather screen shows a friendly error
+   (HTTP 401) instead of crashing.
 
-## Темы для занятия
+## Lesson topics
 
-1. **Compose-основы**: декларативный UI, recomposition, `Modifier`, списки (`LazyColumn`).
-2. **Тема и типографика**: design tokens, `MaterialTheme`, светлая/тёмная тема,
-   почему нельзя хардкодить цвета и размеры.
-3. **Дизайн-система**: зачем общие компоненты, как переиспользовать
+1. **Compose basics**: declarative UI, recomposition, `Modifier`, lists (`LazyColumn`).
+2. **Theme and typography**: design tokens, `MaterialTheme`, light/dark theme,
+   and why colors and sizes must not be hardcoded.
+3. **Design system**: why shared components exist and how to reuse
    `AppCard`, `PrimaryButton`, `StatTile`.
-4. **Навигация**: `NavHost`, аргументы маршрутов, нижняя навигация, deep link.
-5. **Состояние**: ViewModel, `StateFlow`, `collectAsState`, почему `remember`
-   не переживает поворот (экран `BadAddMovieScreen`).
-6. **Room**: Entity / DAO / Database, Flow-запросы, транзакции, кеш,
+4. **Navigation**: `NavHost`, route arguments, bottom navigation, deep links.
+5. **State**: ViewModel, `StateFlow`, `collectAsState`, and why `remember`
+   does not survive rotation (the `BadAddMovieScreen` screen).
+6. **Room**: Entity / DAO / Database, Flow queries, transactions, cache,
    `TypeConverters` (`Converters.kt`: `Date`, `List<String>`, enum).
-7. **Сеть**: Retrofit-интерфейс, DTO и Gson, `suspend`-функции, обработка
-   ошибок, OkHttp-интерсепторы (`OpenWeatherInterceptors.kt`: ключ, логирование).
-8. **Offline-first**: сеть как источник обновлений, база как источник истины для UI.
-
-## Возможные упражнения
-
-- Добавить экран настроек единиц измерения (°C / °F) и сохранить выбор в DataStore.
-- Показать влажность/ветер на экране деталей дня графиком.
-- Сделать pull-to-refresh на главном экране погоды.
-- Добавить поиск города по геолокации (`FusedLocationProvider`).
-- Задействовать готовые конвертеры из `Converters.kt`: сохранить жанры фильма
-  как `List<String>` и единицу измерения города как `TemperatureUnit`.
-- Написать network interceptor, который повторяет запрос один раз при `IOException`
-  или ответе `5xx` (retry), и сравнить его с application-интерсепторами.
-- Перевести экраны фильмов на компоненты дизайн-системы и вынести строки в `strings.xml`.
-
-## Ограничения учебного проекта
-
-- `fallbackToDestructiveMigration()` — при смене схемы база пересоздаётся.
-  В продакшене нужны `Migration`.
-- API-ключ берётся из `local.properties` и попадает в `BuildConfig`, то есть
-  всё равно компилируется в APK. В реальном проекте ключ держат на бэкенде.
-- Эмодзи вместо картинок погоды, чтобы не подключать ассеты и Coil.
-- DI и мультимодульность не используются сознательно.
+7. **Network**: the Retrofit interface, DTOs and Gson, `suspend` functions,
+   error handling, OkHttp interceptors (`OpenWeatherInterceptors.kt`: API key,
+   logging).
+8. **Offline-first**: the network as a source of updates, the database as the
+   source of truth for the UI.
