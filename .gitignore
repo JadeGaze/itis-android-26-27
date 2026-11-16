@@ -1,0 +1,17 @@
+# Gradle and build output
+.gradle/
+.kotlin/
+build/
+/captures
+.externalNativeBuild
+.cxx
+
+# Android Studio / IntelliJ IDEA
+.idea/
+*.iml
+
+# Local machine configuration and secrets (API keys, SDK path)
+local.properties
+
+# macOS
+.DS_Store

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Network security configuration.
+
+    debug-overrides applies ONLY to debuggable builds. It lets a debug
+    build trust user-installed CA certificates. This is needed when HTTPS
+    is inspected by a corporate proxy/VPN that uses its own root CA:
+    install that CA on the emulator as a user certificate and the TLS
+    handshake will succeed.
+
+    Release builds keep the default behavior (system CAs only), and
+    android:debuggable="true" is false there, so debug-overrides is ignored.
+    Never add "trust-anchors with user certificates" outside debug-overrides.
+-->
+<network-security-config>
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
+</network-security-config>

@@ -1,0 +1,75 @@
+<resources>
+    <string name="app_name">ItisAndroid</string>
+
+    <!-- Shared design-system strings -->
+    <string name="common_back">Back</string>
+    <string name="common_search">Search</string>
+    <string name="common_retry">Retry</string>
+    <string name="common_refresh">Refresh</string>
+    <string name="common_delete">Delete</string>
+
+    <!-- Bottom navigation -->
+    <string name="nav_movies">Movies</string>
+    <string name="nav_weather">Weather</string>
+    <string name="nav_cities">Cities</string>
+    <string name="nav_ui_kit">UI Kit</string>
+
+    <!-- Weather: home screen -->
+    <string name="weather_title">Weather</string>
+    <string name="weather_search_placeholder">Enter a city, e.g. Moscow</string>
+    <string name="weather_saved_cities">Saved cities</string>
+    <string name="weather_hourly">Hourly forecast</string>
+    <string name="weather_5_days">5-day forecast</string>
+    <string name="weather_today">Today</string>
+    <string name="weather_feels_like">Feels like</string>
+    <string name="weather_feels_like_value">Feels like %1$s</string>
+    <string name="weather_humidity">Humidity</string>
+    <string name="weather_wind">Wind</string>
+    <string name="weather_updated_at">Updated %1$s</string>
+    <string name="weather_temp_celsius">%1$.0f°C</string>
+    <string name="weather_temp_range">%1$.0f° / %2$.0f°</string>
+    <string name="weather_humidity_value">%1$d%%</string>
+    <string name="weather_wind_value">%1$.1f m/s</string>
+    <string name="weather_slot_details">%1$d%% humidity · %2$.1f m/s wind</string>
+
+    <!-- Weather: day screen -->
+    <string name="weather_day_title">Forecast details</string>
+    <string name="weather_day_summary">Day summary</string>
+    <string name="weather_day_min">Min</string>
+    <string name="weather_day_max">Max</string>
+    <string name="weather_day_hourly">3-hour forecast</string>
+
+    <!-- Weather: saved cities -->
+    <string name="weather_cities_title">Saved cities</string>
+    <string name="weather_cities_subtitle">Cities are stored in the local database (Room). Tap a city to show its forecast.</string>
+    <string name="weather_cities_empty_title">No saved cities</string>
+    <string name="weather_cities_empty_message">Search for a city on the Weather screen — it will appear here.</string>
+    <string name="weather_cities_selected">Selected</string>
+    <string name="weather_add_city">Add city</string>
+
+    <!-- Weather: states and errors -->
+    <string name="weather_empty_title">No forecast yet</string>
+    <string name="weather_empty_message">Search for a city to load the forecast.</string>
+    <string name="weather_error_no_internet">No internet connection. Showing the last saved forecast, if any.</string>
+    <string name="weather_error_invalid_key">The API key is missing or invalid. Add openweather.api.key to local.properties and rebuild the app.</string>
+    <string name="weather_error_city_not_found">City not found. Check the spelling and try again.</string>
+    <string name="weather_error_tls">TLS certificate is not trusted. A proxy or VPN is intercepting HTTPS — install its root CA on the device, or disable the proxy.</string>
+    <string name="weather_error_unknown">Could not load the forecast. Please try again.</string>
+
+    <!-- UI Kit screen -->
+    <string name="design_title">UI Kit</string>
+    <string name="design_intro">Design system of the app: colors, typography, shapes and shared components. Every screen uses these tokens instead of hardcoded values.</string>
+    <string name="design_section_colors">Colors</string>
+    <string name="design_section_typography">Typography</string>
+    <string name="design_section_buttons">Buttons</string>
+    <string name="design_section_cards">Cards and stats</string>
+    <string name="design_section_states">States</string>
+    <string name="design_section_spacing">Spacing</string>
+    <string name="design_color_primary">Primary</string>
+    <string name="design_color_secondary">Secondary</string>
+    <string name="design_color_tertiary">Tertiary</string>
+    <string name="design_color_surface">Surface</string>
+    <string name="design_color_error">Error</string>
+    <string name="design_sample_stat_label">Humidity</string>
+    <string name="design_sample_stat_value">62%</string>
+</resources>
